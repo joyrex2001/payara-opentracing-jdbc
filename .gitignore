@@ -2,5 +2,7 @@
 .project
 .settings
 .DS_Store
+.vscode
+.factorypath
 *~
 /target

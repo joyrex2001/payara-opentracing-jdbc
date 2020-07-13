@@ -52,11 +52,11 @@ public class OpenTracingListener implements SQLTraceListener {
         return span;
     }
 
-    private Span getSpan() {
+    Span getSpan() {
         return currentSpan.get();
     }
 
-    private Tracer getTracer() {
+    Tracer getTracer() {
         if (tracer == null) {
             return GlobalTracer.get();
         }
