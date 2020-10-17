@@ -21,12 +21,12 @@ public class OpenTracingListenerTest {
 
     @BeforeClass
     public static void init() {
-      GlobalTracerTestUtil.setGlobalTracerUnconditionally(mockTracer);
+        GlobalTracerTestUtil.setGlobalTracerUnconditionally(mockTracer);
     }
   
     @Before
     public void before() {
-      mockTracer.reset();
+        mockTracer.reset();
     }
   
     @Test
@@ -36,12 +36,12 @@ public class OpenTracingListenerTest {
     }
   
     @Test
-    public void testExplicitTracer() {
+    public void testSqlTrace() {
         OpenTracingListener listener = new OpenTracingListener();
         assertNull(listener.getSpan());
 
         SQLTraceRecord record = new SQLTraceRecord();
-        record.setMethodName("getMetaData");
+        record.setMethodName("getClientInfo");
         record.setParams(null);
         listener.sqlTrace(record);
         assertNull(listener.getSpan());
@@ -61,7 +61,12 @@ public class OpenTracingListenerTest {
         record.setMethodName("close");
         record.setParams(null);
         listener.sqlTrace(record);
-        assertNotNull(listener.getSpan());
+        assertNull(listener.getSpan());
+
+        record.setMethodName("execute");
+        record.setParams(null);
+        listener.sqlTrace(record);
+        assertNull(listener.getSpan());
 
         List<MockSpan> spans = mockTracer.finishedSpans();
         assertEquals(1, spans.size());

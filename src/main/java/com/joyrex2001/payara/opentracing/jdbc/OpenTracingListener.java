@@ -12,23 +12,28 @@ public class OpenTracingListener implements SQLTraceListener {
 
     private Tracer tracer;
 
-    final private String PREPARE_STATEMENT = "prepareStatement";
-    final private String EXECUTE_STATEMENT = "executeQuery";
-    final private String CLOSE_STATEMENT = "close";
+    private static final String GET_CLIENT_INFO = "getClientInfo";
+    private static final String SET_CLIENT_INFO = "setClientInfo";
+    private static final String PREPARE_STATEMENT = "prepareStatement";
+    private static final String CLOSE_STATEMENT = "close";
 
     ThreadLocal<Span> currentSpan = new ThreadLocal<>();
 
     @Override
     public void sqlTrace(SQLTraceRecord record) {
         switch(record.getMethodName()) {
+            case GET_CLIENT_INFO:
+                break;
+            case SET_CLIENT_INFO:
+                break;
             case PREPARE_STATEMENT:
                 this.prepare(record);
                 break;
-            case EXECUTE_STATEMENT:
-                this.execute(record);
-                break;
             case CLOSE_STATEMENT:
                 this.close();
+                break;
+            default:
+                this.log(record);
                 break;
         }
     }
@@ -38,12 +43,16 @@ public class OpenTracingListener implements SQLTraceListener {
         Tags.DB_STATEMENT.set(span, record.getParams()[0].toString());
     }
 
-    private void execute(SQLTraceRecord record) {
-        this.getSpan().log(record.toString());
+    private void log(SQLTraceRecord record) {
+        Span span = this.getSpan();
+        if (span != null) {
+            span.log(record.toString());
+        }
     }
 
     private void close() {
         this.getSpan().finish();
+        currentSpan.set(null);
     }
 
     private Span newSpan(String operationName) {
@@ -58,7 +67,7 @@ public class OpenTracingListener implements SQLTraceListener {
 
     Tracer getTracer() {
         if (tracer == null) {
-            return GlobalTracer.get();
+            tracer = GlobalTracer.get();
         }
         return tracer;
     }
